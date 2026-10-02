@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Participant } from '../types/Participant'
-import Winner from './Winner.vue'
+import WinnerItem from './WinnerItem.vue'
 import BaseButton from './BaseButton.vue'
 
 defineProps<{
@@ -19,7 +19,7 @@ const emit = defineEmits<{
     <div class="card-body winners-body">
       <div class="winners-list">
         <span v-if="winners.length === 0" class="winners-placeholder">Winners</span>
-        <Winner
+        <WinnerItem
           v-for="winner in winners"
           :key="winner.id"
           :winner="winner"
