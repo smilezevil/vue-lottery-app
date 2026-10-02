@@ -11,4 +11,20 @@
 @import "bootstrap/scss/card";
 @import "bootstrap/scss/tables";
 @import "bootstrap/scss/modal";
+@import "bootstrap/scss/close";
 @import "bootstrap/scss/transitions";
+
+.app {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+.card-body {
+  padding: 32px;
+}
+
+.btn {
+  padding: 10px 24px;
+  font-size: 1rem;
+}
