@@ -1,8 +1,38 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import type { Participant } from './types/Participant'
 
 const participants = ref<Participant[]>([])
+
+const winnerIds = ref<number[]>([])
+
+const winners = computed(() =>
+  winnerIds.value
+    .map((id) => participants.value.find((p) => p.id === id))
+    .filter((p): p is Participant => Boolean(p)),
+)
+
+const availableForWinning = computed(() =>
+  participants.value.filter((p) => !winnerIds.value.includes(p.id)),
+)
+
+const canPickWinner = computed(
+  () => winnerIds.value.length < 3 && availableForWinning.value.length > 0,
+)
+
+function pickWinner(): void {
+  if (!canPickWinner.value) {
+    return
+  }
+
+  const pool = availableForWinning.value
+  const randomIndex = Math.floor(Math.random() * pool.length)
+  winnerIds.value.push(pool[randomIndex].id)
+}
+
+function removeWinner(id: number): void {
+  winnerIds.value = winnerIds.value.filter((winnerId) => winnerId !== id)
+}
 
 const name = ref('')
 const dob = ref('')
@@ -85,6 +115,32 @@ function handleSave(): void {
 
 <template>
   <div class="app">
+    <div class="card winners-card">
+      <div class="card-body winners-body">
+        <div class="winners-list">
+          <span v-if="winners.length === 0" class="winners-placeholder">Winners</span>
+          <span v-for="winner in winners" :key="winner.id" class="winner-chip">
+            {{ winner.name }}
+            <button
+              type="button"
+              class="winner-chip__remove"
+              @click="removeWinner(winner.id)"
+            >
+              ×
+            </button>
+          </span>
+        </div>
+        <button
+          type="button"
+          class="btn btn-primary"
+          :disabled="!canPickWinner"
+          @click="pickWinner"
+        >
+          New winner
+        </button>
+      </div>
+    </div>
+
     <div class="card form-card">
       <div class="card-body" @keyup.enter="handleSave">
         <h5 class="card-title">REGISTER FORM</h5>
@@ -178,6 +234,49 @@ function handleSave(): void {
   max-width: 900px;
   margin: 0 auto;
   padding: 48px 24px;
+}
+
+.winners-card {
+  margin-bottom: 32px;
+}
+
+.winners-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.winners-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 1;
+}
+
+.winners-placeholder {
+  color: #adb5bd;
+}
+
+.winner-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #0d6efd;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.winner-chip__remove {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
 }
 
 .form-card {
