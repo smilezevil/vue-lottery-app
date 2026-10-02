@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import type { Participant } from '../types/Participant'
+import { hasErrors, validateParticipantForm } from '../utils/participantValidation'
 import BaseInput from './BaseInput.vue'
 import BaseButton from './BaseButton.vue'
 
@@ -24,45 +25,6 @@ const errors = reactive({
   phone: '',
 })
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const PHONE_REGEX = /^\+380\d{9}$/
-
-function validateForm(): boolean {
-  errors.name = name.value.trim() ? '' : "Поле обов'язкове для заповнення"
-
-  if (!email.value.trim()) {
-    errors.email = "Поле обов'язкове для заповнення"
-  } else if (!EMAIL_REGEX.test(email.value.trim())) {
-    errors.email = 'Некоректний формат email'
-  } else if (
-    props.participants.some(
-      (p) => p.email.toLowerCase() === email.value.trim().toLowerCase(),
-    )
-  ) {
-    errors.email = 'Учасник з такою поштою вже зареєстрований'
-  } else {
-    errors.email = ''
-  }
-
-  if (!phone.value.trim()) {
-    errors.phone = "Поле обов'язкове для заповнення"
-  } else if (!PHONE_REGEX.test(phone.value.trim())) {
-    errors.phone = 'Формат телефону: +380XXXXXXXXX'
-  } else {
-    errors.phone = ''
-  }
-
-  if (!dob.value) {
-    errors.dob = "Поле обов'язкове для заповнення"
-  } else if (new Date(dob.value) > new Date()) {
-    errors.dob = 'Дата народження не може бути у майбутньому'
-  } else {
-    errors.dob = ''
-  }
-
-  return !errors.name && !errors.email && !errors.phone && !errors.dob
-}
-
 function resetForm(): void {
   name.value = ''
   dob.value = ''
@@ -75,7 +37,15 @@ function resetForm(): void {
 }
 
 function handleSave(): void {
-  if (!validateForm()) {
+  const existingEmails = props.participants.map((p) => p.email.toLowerCase())
+  const validationErrors = validateParticipantForm(
+    { name: name.value, dob: dob.value, email: email.value, phone: phone.value },
+    existingEmails,
+  )
+
+  Object.assign(errors, validationErrors)
+
+  if (hasErrors(validationErrors)) {
     return
   }
 

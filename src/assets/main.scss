@@ -14,8 +14,12 @@
 @import "bootstrap/scss/close";
 @import "bootstrap/scss/transitions";
 
+body {
+  background-color: #f4f4f4;
+}
+
 .app {
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 48px 24px;
 }

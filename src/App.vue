@@ -1,11 +1,31 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { Participant } from './types/Participant'
 import WinnersList from './components/WinnersList.vue'
 import RegistrationForm from './components/RegistrationForm.vue'
 import ParticipantsTable from './components/ParticipantsTable.vue'
 
-const participants = ref<Participant[]>([])
+const STORAGE_KEY = 'vue-lottery-participants'
+
+function loadParticipants(): Participant[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    return raw ? (JSON.parse(raw) as Participant[]) : []
+  } catch {
+    return []
+  }
+}
+
+const participants = ref<Participant[]>(loadParticipants())
+
+watch(
+  participants,
+  (value) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(value))
+  },
+  { deep: true },
+)
+
 const winnerIds = ref<number[]>([])
 
 const winners = computed(() =>
@@ -45,6 +65,18 @@ function removeWinner(id: number): void {
 function registerParticipant(participant: Participant): void {
   participants.value.push(participant)
 }
+
+function updateParticipant(updated: Participant): void {
+  const index = participants.value.findIndex((p) => p.id === updated.id)
+  if (index !== -1) {
+    participants.value[index] = updated
+  }
+}
+
+function deleteParticipant(id: number): void {
+  participants.value = participants.value.filter((p) => p.id !== id)
+  winnerIds.value = winnerIds.value.filter((winnerId) => winnerId !== id)
+}
 </script>
 
 <template>
@@ -58,6 +90,10 @@ function registerParticipant(participant: Participant): void {
 
     <RegistrationForm :participants="participants" @register="registerParticipant" />
 
-    <ParticipantsTable :participants="participants" />
+    <ParticipantsTable
+      :participants="participants"
+      @update="updateParticipant"
+      @delete="deleteParticipant"
+    />
   </div>
 </template>
