@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+
 interface NavItem {
   label: string
   to: string
@@ -9,6 +12,14 @@ const navItems: NavItem[] = [
   { label: 'About author', to: '/about' },
   { label: 'Users', to: '/users' },
 ]
+
+const router = useRouter()
+const authStore = useAuthStore()
+
+function logout(): void {
+  authStore.logout()
+  router.push({ name: 'login' })
+}
 </script>
 
 <template>
@@ -17,7 +28,23 @@ const navItems: NavItem[] = [
       {{ item.label }}
     </RouterLink>
 
-    <RouterLink to="/login" class="nav-item nav-item--login">
+    <template v-if="authStore.isAuthenticated">
+      <span v-if="authStore.user" class="current-user">
+        <img
+          v-if="authStore.user.image"
+          :src="authStore.user.image"
+          :alt="authStore.user.firstName"
+          class="current-user__avatar"
+        />
+        {{ authStore.user.firstName }}
+      </span>
+      <button type="button" class="nav-item nav-item--auth" @click="logout">
+        <i class="bi bi-box-arrow-right"></i>
+        Logout
+      </button>
+    </template>
+
+    <RouterLink v-else to="/login" class="nav-item nav-item--auth">
       <i class="bi bi-box-arrow-in-right"></i>
       Login
     </RouterLink>
@@ -37,10 +64,13 @@ const navItems: NavItem[] = [
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
+  border: 1px solid transparent;
   border-radius: 6px;
+  background: none;
   color: #495057;
   font-weight: 500;
   text-decoration: none;
+  cursor: pointer;
   transition:
     background-color 0.15s ease,
     color 0.15s ease;
@@ -56,19 +86,32 @@ const navItems: NavItem[] = [
   color: #0d6efd;
 }
 
-.nav-item--login {
+.nav-item--auth {
   margin-left: 8px;
-  border: 1px solid #0d6efd;
+  border-color: #0d6efd;
   color: #0d6efd;
 }
 
-.nav-item--login:hover {
+.nav-item--auth:hover,
+.nav-item--auth.router-link-active {
   background-color: #0d6efd;
   color: #fff;
 }
 
-.nav-item--login.router-link-active {
-  background-color: #0d6efd;
-  color: #fff;
+.current-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 12px;
+  color: #495057;
+  font-weight: 500;
+}
+
+.current-user__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #f1f3f5;
+  object-fit: cover;
 }
 </style>
