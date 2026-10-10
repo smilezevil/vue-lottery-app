@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 const APP_NAME = 'Vue Lottery'
 
@@ -19,6 +20,7 @@ const router = createRouter({
     },
     {
       path: '/users',
+      meta: { requiresAuth: true },
       children: [
         {
           path: '',
@@ -54,7 +56,7 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: () => import('@/views/LoginView.vue'),
-      meta: { title: 'Login' },
+      meta: { title: 'Login', guestOnly: true },
     },
     {
       path: '/:pathMatch(.*)*',
@@ -63,6 +65,18 @@ const router = createRouter({
       meta: { title: 'Page not found' },
     },
   ],
+})
+
+router.beforeEach((to) => {
+  const authStore = useAuthStore()
+
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    return { name: 'login', query: { redirect: to.fullPath } }
+  }
+
+  if (to.meta.guestOnly && authStore.isAuthenticated) {
+    return { name: 'users' }
+  }
 })
 
 router.afterEach((to) => {
