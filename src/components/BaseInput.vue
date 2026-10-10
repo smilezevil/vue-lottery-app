@@ -1,6 +1,12 @@
 <script setup lang="ts">
+import { useId } from 'vue'
+
+defineOptions({
+  inheritAttrs: false,
+})
+
 defineProps<{
-  modelValue: string
+  modelValue?: string | number
   label: string
   type?: string
   placeholder?: string
@@ -10,12 +16,16 @@ defineProps<{
 defineEmits<{
   'update:modelValue': [value: string]
 }>()
+
+const inputId = useId()
 </script>
 
 <template>
   <div class="field">
-    <label class="form-label">{{ label }}</label>
+    <label class="form-label" :for="inputId">{{ label }}</label>
     <input
+      v-bind="$attrs"
+      :id="inputId"
       :type="type ?? 'text'"
       class="form-control"
       :class="{ 'is-invalid': error }"

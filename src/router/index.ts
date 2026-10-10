@@ -19,9 +19,36 @@ const router = createRouter({
     },
     {
       path: '/users',
-      name: 'users',
-      component: () => import('@/views/UsersView.vue'),
-      meta: { title: 'Users' },
+      children: [
+        {
+          path: '',
+          name: 'users',
+          component: () => import('@/views/UsersView.vue'),
+          meta: { title: 'Users' },
+        },
+        {
+          path: 'new',
+          name: 'user-create',
+          component: () => import('@/views/UserCreateView.vue'),
+          meta: { title: 'New user' },
+        },
+        {
+          path: ':id(\\d+)',
+          name: 'user-details',
+          component: () => import('@/views/UserDetailsView.vue'),
+          props: true,
+          meta: { title: 'User details' },
+          children: [
+            {
+              path: 'edit',
+              name: 'user-edit',
+              component: () => import('@/views/UserEditView.vue'),
+              props: true,
+              meta: { title: 'Edit user' },
+            },
+          ],
+        },
+      ],
     },
     {
       path: '/login',
