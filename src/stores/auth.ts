@@ -44,13 +44,38 @@ export const useAuthStore = defineStore('auth', () => {
     setUser(authUser)
   }
 
+  let refreshPromise: Promise<string | null> | null = null
+
+  async function requestNewTokens(currentRefreshToken: string): Promise<string | null> {
+    try {
+      const tokens = await ServiceProvider.auth.refresh(currentRefreshToken)
+      setTokens(tokens)
+      return tokens.accessToken
+    } catch {
+      logout()
+      return null
+    } finally {
+      refreshPromise = null
+    }
+  }
+
+  function refreshAccessToken(): Promise<string | null> {
+    if (!refreshToken.value) {
+      logout()
+      return Promise.resolve(null)
+    }
+
+    refreshPromise ??= requestNewTokens(refreshToken.value)
+    return refreshPromise
+  }
+
   async function fetchCurrentUser(): Promise<void> {
     if (!accessToken.value) {
       return
     }
 
     try {
-      const currentUser = await ServiceProvider.auth.getCurrentUser(accessToken.value)
+      const currentUser = await ServiceProvider.auth.getCurrentUser()
       setUser(currentUser)
     } catch (e) {
       if (e instanceof HttpError && e.status === 401) {
@@ -74,6 +99,7 @@ export const useAuthStore = defineStore('auth', () => {
     user,
     isAuthenticated,
     setTokens,
+    refreshAccessToken,
     login,
     fetchCurrentUser,
     logout,

@@ -11,10 +11,8 @@ export class AuthService {
     })
   }
 
-  getCurrentUser(accessToken: string): Promise<AuthUser> {
-    return http<AuthUser>('/auth/me', {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    })
+  getCurrentUser(): Promise<AuthUser> {
+    return http<AuthUser>('/auth/me', { auth: true })
   }
 
   refresh(refreshToken: string): Promise<AuthTokens> {
