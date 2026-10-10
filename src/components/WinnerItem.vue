@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { Participant } from '../types/Participant'
+import type { User } from '@/types/user'
 
 defineProps<{
-  winner: Participant
+  winner: User
 }>()
 
 defineEmits<{
@@ -12,7 +12,7 @@ defineEmits<{
 
 <template>
   <span class="winner-chip">
-    {{ winner.name }}
+    {{ winner.firstName }} {{ winner.lastName }}
     <button type="button" class="winner-chip__remove" @click="$emit('remove', winner.id)">
       ×
     </button>
