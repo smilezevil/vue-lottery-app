@@ -56,7 +56,7 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: () => import('@/views/LoginView.vue'),
-      meta: { title: 'Login', guestOnly: true },
+      meta: { title: 'Login', guestOnly: true, layout: 'auth' },
     },
     {
       path: '/:pathMatch(.*)*',
