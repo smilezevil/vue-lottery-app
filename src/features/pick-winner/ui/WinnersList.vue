@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
+import { AppButton, AppCard } from '@/shared/ui'
 import { useWinnersStore } from '../model/winners.store'
 import WinnerItem from './WinnerItem.vue'
-import BaseButton from '@/shared/ui/BaseButton/BaseButton.vue'
 
 const winnersStore = useWinnersStore()
 const { winners, canPickWinner } = storeToRefs(winnersStore)
@@ -10,10 +10,10 @@ const { pickWinner, removeWinner } = winnersStore
 </script>
 
 <template>
-  <div class="card winners-card">
-    <div class="card-body winners-body">
-      <div class="winners-list">
-        <span v-if="winners.length === 0" class="winners-placeholder">Winners</span>
+  <AppCard class="winners-card">
+    <div class="winners">
+      <div class="winners__list">
+        <span v-if="winners.length === 0" class="muted">Winners</span>
         <WinnerItem
           v-for="winner in winners"
           :key="winner.id"
@@ -21,31 +21,32 @@ const { pickWinner, removeWinner } = winnersStore
           @remove="removeWinner"
         />
       </div>
-      <BaseButton :disabled="!canPickWinner" @click="pickWinner">New winner</BaseButton>
+      <AppButton
+        label="New winner"
+        icon="pi pi-star"
+        :disabled="!canPickWinner"
+        @click="pickWinner"
+      />
     </div>
-  </div>
+  </AppCard>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .winners-card {
   margin-bottom: 32px;
 }
 
-.winners-body {
+.winners {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-}
 
-.winners-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  flex: 1;
-}
-
-.winners-placeholder {
-  color: #adb5bd;
+  &__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    flex: 1;
+  }
 }
 </style>

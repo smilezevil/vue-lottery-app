@@ -1,29 +1,32 @@
+<script setup lang="ts">
+import { AppButton, AppCard } from '@/shared/ui'
+</script>
+
 <template>
-  <div class="card">
-    <div class="card-body not-found">
+  <AppCard>
+    <div class="not-found">
       <h1 class="not-found__code">404</h1>
-      <p class="not-found__text">Сторінку не знайдено</p>
-      <RouterLink to="/" class="btn btn-primary">На головну</RouterLink>
+      <p class="muted not-found__text">Сторінку не знайдено</p>
+      <AppButton to="/" label="На головну" icon="pi pi-home" />
     </div>
-  </div>
+  </AppCard>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .not-found {
+  padding: 32px 0;
   text-align: center;
-  padding: 64px 32px;
-}
 
-.not-found__code {
-  font-size: 5rem;
-  font-weight: 700;
-  color: #0d6efd;
-  margin-bottom: 8px;
-}
+  &__code {
+    margin-bottom: 8px;
+    color: var(--p-primary-color);
+    font-size: 5rem;
+    font-weight: 700;
+  }
 
-.not-found__text {
-  color: #6c757d;
-  font-size: 1.25rem;
-  margin-bottom: 24px;
+  &__text {
+    margin-bottom: 24px;
+    font-size: 1.25rem;
+  }
 }
 </style>

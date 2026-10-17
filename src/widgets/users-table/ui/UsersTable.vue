@@ -1,205 +1,144 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import type { User } from '@/entities/user'
+import { DeleteUserDialog } from '@/features/user-delete'
+import { AppButton, AppTable } from '@/shared/ui'
+import type { AppTableColumn } from '@/shared/ui'
 
 defineProps<{
   users: User[]
   startIndex: number
+  loading?: boolean
 }>()
 
-const emit = defineEmits<{
-  delete: [user: User]
-}>()
+const columns: AppTableColumn[] = [
+  { key: 'index', header: '#' },
+  { key: 'name', header: 'Name' },
+  { key: 'age', header: 'Age' },
+  { key: 'gender', header: 'Gender' },
+  { key: 'email', header: 'Email' },
+  { key: 'phone', header: 'Phone number' },
+  { key: 'actions', header: 'Actions', align: 'right' },
+]
+
+const userToDelete = ref<User | null>(null)
+const isDeleteDialogOpen = ref(false)
+
+function openDeleteDialog(user: User): void {
+  userToDelete.value = user
+  isDeleteDialogOpen.value = true
+}
 </script>
 
 <template>
-  <div class="table-wrapper">
-    <table class="table participants-table">
-      <thead>
-      <tr>
-        <th>#</th>
-        <th>Name</th>
-        <th>Age</th>
-        <th>Gender</th>
-        <th>Email</th>
-        <th>Phone number</th>
-        <th class="actions-cell">Actions</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr v-for="(user, index) in users" :key="user.id">
-        <td class="index-cell">{{ startIndex + index + 1 }}</td>
-        <td>
-          <RouterLink :to="{ name: 'user-details', params: { id: user.id } }" class="user-cell">
-            <img
-              v-if="user.image"
-              :src="user.image"
-              :alt="`${user.firstName} ${user.lastName}`"
-              class="user-cell__avatar"
-            />
-            <span v-else class="user-cell__avatar user-cell__avatar--empty">
-                <i class="bi bi-person"></i>
-              </span>
-            <span class="text-cell" :title="`${user.firstName} ${user.lastName}`">
-                {{ user.firstName }} {{ user.lastName }}
-              </span>
-          </RouterLink>
-        </td>
-        <td>{{ user.age }}</td>
-        <td>{{ user.gender }}</td>
-        <td>
-          <span class="text-cell" :title="user.email">{{ user.email }}</span>
-        </td>
-        <td>{{ user.phone }}</td>
-        <td class="actions-cell">
-          <div class="actions">
-            <RouterLink
-              :to="{ name: 'user-details', params: { id: user.id } }"
-              class="icon-btn"
-              title="Переглянути"
-              aria-label="Переглянути"
-            >
-              <i class="bi bi-eye"></i>
-            </RouterLink>
-            <RouterLink
-              :to="{ name: 'user-edit', params: { id: user.id } }"
-              class="icon-btn icon-btn--edit"
-              title="Редагувати дані"
-              aria-label="Редагувати дані"
-            >
-              <i class="bi bi-pencil"></i>
-            </RouterLink>
-            <button
-              type="button"
-              class="icon-btn icon-btn--delete"
-              title="Видалити учасника"
-              aria-label="Видалити учасника"
-              @click="emit('delete', user)"
-            >
-              <i class="bi bi-trash"></i>
-            </button>
-          </div>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-  </div>
+  <AppTable
+    :rows="users"
+    :columns="columns"
+    data-key="id"
+    :loading="loading"
+    empty-message="Користувачів не знайдено"
+  >
+    <template #cell-index="{ index }">
+      <span class="muted">{{ startIndex + index + 1 }}</span>
+    </template>
 
-  <p v-if="users.length === 0" class="empty-message">Користувачів не знайдено</p>
+    <template #cell-name="{ row }">
+      <RouterLink :to="{ name: 'user-details', params: { id: row.id } }" class="user-cell">
+        <img
+          v-if="row.image"
+          :src="row.image"
+          :alt="`${row.firstName} ${row.lastName}`"
+          class="user-cell__avatar"
+        />
+        <span v-else class="user-cell__avatar user-cell__avatar--empty">
+          <i class="pi pi-user"></i>
+        </span>
+        <span class="text-cell" :title="`${row.firstName} ${row.lastName}`">
+          {{ row.firstName }} {{ row.lastName }}
+        </span>
+      </RouterLink>
+    </template>
+
+    <template #cell-email="{ row }">
+      <span class="text-cell" :title="row.email">{{ row.email }}</span>
+    </template>
+
+    <template #cell-actions="{ row }">
+      <div class="actions">
+        <AppButton
+          :to="{ name: 'user-details', params: { id: row.id } }"
+          icon="pi pi-eye"
+          severity="secondary"
+          variant="outlined"
+          size="small"
+          title="Переглянути"
+          aria-label="Переглянути"
+        />
+        <AppButton
+          :to="{ name: 'user-edit', params: { id: row.id } }"
+          icon="pi pi-pencil"
+          severity="secondary"
+          variant="outlined"
+          size="small"
+          title="Редагувати дані"
+          aria-label="Редагувати дані"
+        />
+        <AppButton
+          icon="pi pi-trash"
+          severity="danger"
+          variant="outlined"
+          size="small"
+          title="Видалити учасника"
+          aria-label="Видалити учасника"
+          @click="openDeleteDialog(row)"
+        />
+      </div>
+    </template>
+  </AppTable>
+
+  <DeleteUserDialog v-model:visible="isDeleteDialogOpen" :user="userToDelete" />
 </template>
 
-<style scoped>
-.table-wrapper {
-  overflow-x: auto;
-}
-
-.participants-table {
-  width: 100%;
-  margin-bottom: 0;
-}
-
-.participants-table th,
-.participants-table td {
-  padding: 12px 10px;
-  vertical-align: middle;
-  white-space: nowrap;
-}
-
-.participants-table th {
-  font-weight: 600;
-}
-
-.index-cell {
-  color: #6c757d;
-}
-
+<style scoped lang="scss">
 .user-cell {
   display: flex;
   align-items: center;
   gap: 10px;
   color: inherit;
   text-decoration: none;
-}
 
-.user-cell:hover .text-cell {
-  color: #0d6efd;
-  text-decoration: underline;
-}
+  &:hover .text-cell {
+    color: var(--p-primary-color);
+    text-decoration: underline;
+  }
 
-.user-cell__avatar {
-  flex-shrink: 0;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background-color: #f1f3f5;
-  object-fit: cover;
-}
+  &__avatar {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--p-content-hover-background);
+    object-fit: cover;
 
-.user-cell__avatar--empty {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #6c757d;
+    &--empty {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--p-text-muted-color);
+    }
+  }
 }
 
 .text-cell {
   display: inline-block;
-  max-width: 280px;
+  max-width: 260px;
   overflow: hidden;
   text-overflow: ellipsis;
   vertical-align: middle;
 }
 
-.actions-cell {
-  text-align: right;
-}
-
 .actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 6px;
-}
-
-.icon-btn {
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border: 1px solid #dee2e6;
-  border-radius: 6px;
-  background-color: #fff;
-  color: #495057;
-  text-decoration: none;
-  cursor: pointer;
-  transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease,
-    color 0.15s ease;
-}
-
-.icon-btn:hover {
-  background-color: #f1f3f5;
-}
-
-.icon-btn--edit:hover {
-  border-color: #0d6efd;
-  background-color: #e7f1ff;
-  color: #0d6efd;
-}
-
-.icon-btn--delete {
-  color: #dc3545;
-}
-
-.icon-btn--delete:hover {
-  border-color: #dc3545;
-  background-color: #fdecee;
-}
-
-.empty-message {
-  color: #6c757d;
-  text-align: center;
-  margin: 0;
-  padding: 24px 0 8px;
+  gap: 6px;
 }
 </style>

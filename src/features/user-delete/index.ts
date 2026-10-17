@@ -1,1 +1,1 @@
-export { default as DeleteUserModal } from './ui/DeleteUserModal.vue'
+export { default as DeleteUserDialog } from './ui/DeleteUserDialog.vue'

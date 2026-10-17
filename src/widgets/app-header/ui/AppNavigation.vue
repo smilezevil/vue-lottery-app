@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
-import { useSessionStore } from '@/entities/session/model/session.store'
+import { storeToRefs } from 'pinia'
+import { useSessionStore } from '@/entities/session'
+import { LogoutButton } from '@/features/auth'
+import { AppButton } from '@/shared/ui'
 
 interface NavItem {
   label: string
@@ -13,13 +15,7 @@ const navItems: NavItem[] = [
   { label: 'Users', to: '/users' },
 ]
 
-const router = useRouter()
-const sessionStore = useSessionStore()
-
-function logout(): void {
-  sessionStore.logout()
-  router.push({ name: 'login' })
-}
+const { isAuthenticated, user } = storeToRefs(useSessionStore())
 </script>
 
 <template>
@@ -28,30 +24,31 @@ function logout(): void {
       {{ item.label }}
     </RouterLink>
 
-    <template v-if="sessionStore.isAuthenticated">
-      <span v-if="sessionStore.user" class="current-user">
+    <template v-if="isAuthenticated">
+      <span v-if="user" class="current-user">
         <img
-          v-if="sessionStore.user.image"
-          :src="sessionStore.user.image"
-          :alt="sessionStore.user.firstName"
+          v-if="user.image"
+          :src="user.image"
+          :alt="user.firstName"
           class="current-user__avatar"
         />
-        {{ sessionStore.user.firstName }}
+        {{ user.firstName }}
       </span>
-      <button type="button" class="nav-item nav-item--auth" @click="logout">
-        <i class="bi bi-box-arrow-right"></i>
-        Logout
-      </button>
+      <LogoutButton />
     </template>
 
-    <RouterLink v-else to="/login" class="nav-item nav-item--auth">
-      <i class="bi bi-box-arrow-in-right"></i>
-      Login
-    </RouterLink>
+    <AppButton
+      v-else
+      :to="{ name: 'login' }"
+      label="Login"
+      icon="pi pi-sign-in"
+      variant="outlined"
+      size="small"
+    />
   </nav>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .app-navigation {
   display: flex;
   align-items: center;
@@ -60,58 +57,40 @@ function logout(): void {
 }
 
 .nav-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
   padding: 8px 14px;
-  border: 1px solid transparent;
   border-radius: 6px;
-  background: none;
-  color: #495057;
+  color: var(--p-text-muted-color);
   font-weight: 500;
   text-decoration: none;
-  cursor: pointer;
   transition:
     background-color 0.15s ease,
     color 0.15s ease;
-}
 
-.nav-item:hover {
-  background-color: #f1f3f5;
-  color: #212529;
-}
+  &:hover {
+    background-color: var(--p-content-hover-background);
+    color: var(--p-text-color);
+  }
 
-.nav-item.router-link-active {
-  background-color: #e7f1ff;
-  color: #0d6efd;
-}
-
-.nav-item--auth {
-  margin-left: 8px;
-  border-color: #0d6efd;
-  color: #0d6efd;
-}
-
-.nav-item--auth:hover,
-.nav-item--auth.router-link-active {
-  background-color: #0d6efd;
-  color: #fff;
+  &.router-link-active {
+    background-color: var(--p-highlight-background);
+    color: var(--p-highlight-color);
+  }
 }
 
 .current-user {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-left: 12px;
-  color: #495057;
+  margin: 0 8px 0 12px;
+  color: var(--p-text-muted-color);
   font-weight: 500;
-}
 
-.current-user__avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background-color: #f1f3f5;
-  object-fit: cover;
+  &__avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--p-content-hover-background);
+    object-fit: cover;
+  }
 }
 </style>

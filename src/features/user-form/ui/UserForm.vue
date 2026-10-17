@@ -3,8 +3,8 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { z } from 'zod'
 import type { CreateUserDto } from '@/entities/user'
-import BaseInput from '@/shared/ui/BaseInput/BaseInput.vue'
-import BaseButton from '@/shared/ui/BaseButton/BaseButton.vue'
+import { AppButton, AppInput, AppMessage, AppSelect } from '@/shared/ui'
+import type { AppSelectOption } from '@/shared/ui'
 
 const props = withDefaults(
   defineProps<{
@@ -25,6 +25,11 @@ const emit = defineEmits<{
   submit: [values: CreateUserDto]
   cancel: []
 }>()
+
+const genderOptions: AppSelectOption[] = [
+  { label: 'female', value: 'female' },
+  { label: 'male', value: 'male' },
+]
 
 const REQUIRED = "Поле обов'язкове для заповнення"
 const MIN_PASSWORD_LENGTH = 6
@@ -86,23 +91,23 @@ const onSubmit = handleSubmit((values) => {
 </script>
 
 <template>
-  <form class="user-form" novalidate @submit.prevent="onSubmit">
+  <form novalidate @submit.prevent="onSubmit">
     <div class="user-form__grid">
-      <BaseInput
+      <AppInput
         v-model="firstName"
         v-bind="firstNameAttrs"
         label="First name"
         placeholder="Emily"
         :error="errors.firstName"
       />
-      <BaseInput
+      <AppInput
         v-model="lastName"
         v-bind="lastNameAttrs"
         label="Last name"
         placeholder="Johnson"
         :error="errors.lastName"
       />
-      <BaseInput
+      <AppInput
         v-model="email"
         v-bind="emailAttrs"
         type="email"
@@ -110,7 +115,7 @@ const onSubmit = handleSubmit((values) => {
         placeholder="emily@example.com"
         :error="errors.email"
       />
-      <BaseInput
+      <AppInput
         v-model="username"
         v-bind="usernameAttrs"
         label="Username"
@@ -118,7 +123,7 @@ const onSubmit = handleSubmit((values) => {
         autocomplete="username"
         :error="errors.username"
       />
-      <BaseInput
+      <AppInput
         v-model="password"
         v-bind="passwordAttrs"
         type="password"
@@ -126,7 +131,7 @@ const onSubmit = handleSubmit((values) => {
         autocomplete="new-password"
         :error="errors.password"
       />
-      <BaseInput
+      <AppInput
         v-model="age"
         v-bind="ageAttrs"
         type="number"
@@ -134,24 +139,15 @@ const onSubmit = handleSubmit((values) => {
         placeholder="25"
         :error="errors.age"
       />
-
-      <div class="field">
-        <label class="form-label" for="user-form-gender">Gender</label>
-        <select
-          id="user-form-gender"
-          v-model="gender"
-          v-bind="genderAttrs"
-          class="form-select"
-          :class="{ 'is-invalid': errors.gender }"
-        >
-          <option :value="undefined" disabled>Оберіть стать</option>
-          <option value="female">female</option>
-          <option value="male">male</option>
-        </select>
-        <div v-if="errors.gender" class="invalid-feedback">{{ errors.gender }}</div>
-      </div>
-
-      <BaseInput
+      <AppSelect
+        v-model="gender"
+        v-bind="genderAttrs"
+        label="Gender"
+        :options="genderOptions"
+        placeholder="Оберіть стать"
+        :error="errors.gender"
+      />
+      <AppInput
         v-model="phone"
         v-bind="phoneAttrs"
         type="tel"
@@ -161,49 +157,40 @@ const onSubmit = handleSubmit((values) => {
       />
     </div>
 
-    <p v-if="errorMessage" class="form-error">
-      <i class="bi bi-exclamation-triangle"></i>
+    <AppMessage v-if="errorMessage" severity="error" class="user-form__error">
       {{ errorMessage }}
-    </p>
+    </AppMessage>
 
     <div class="user-form__actions">
-      <BaseButton variant="secondary" :disabled="isSubmitting" @click="emit('cancel')">
-        Скасувати
-      </BaseButton>
-      <BaseButton type="submit" :disabled="isSubmitting">
-        {{ isSubmitting ? 'Збереження...' : submitLabel }}
-      </BaseButton>
+      <AppButton
+        label="Скасувати"
+        severity="secondary"
+        variant="outlined"
+        :disabled="isSubmitting"
+        @click="emit('cancel')"
+      />
+      <AppButton type="submit" :label="submitLabel" icon="pi pi-check" :loading="isSubmitting" />
     </div>
   </form>
 </template>
 
-<style scoped>
-.user-form__grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: 24px;
-}
+<style scoped lang="scss">
+.user-form {
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 24px;
+  }
 
-.field {
-  margin-bottom: 20px;
-}
+  &__error {
+    margin-bottom: 20px;
+  }
 
-.field label {
-  font-weight: 500;
-  margin-bottom: 6px;
-}
-
-.form-error {
-  padding: 12px 16px;
-  border-radius: 6px;
-  background-color: #fdecee;
-  color: #dc3545;
-}
-
-.user-form__actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+  }
 }
 
 @media (max-width: 640px) {

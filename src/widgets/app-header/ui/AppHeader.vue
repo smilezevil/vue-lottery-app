@@ -12,20 +12,20 @@ import AppNavigation from './AppNavigation.vue'
   </header>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .app-header {
-  background-color: #fff;
-  border-bottom: 1px solid #dee2e6;
-}
+  background-color: var(--p-content-background);
+  border-bottom: 1px solid var(--p-content-border-color);
 
-.app-header__inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 16px;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 14px 24px;
+  &__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 14px 24px;
+  }
 }
 </style>

@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
-import { useUsersStore } from '@/entities/user/model/users.store'
-import DeleteUserModal from '@/features/user-delete/ui/DeleteUserModal.vue'
+import { useUsersStore } from '@/entities/user'
+import { DeleteUserDialog } from '@/features/user-delete'
+import { AppButton, AppCard, AppMessage } from '@/shared/ui'
 
 const props = defineProps<{
   id: string
@@ -16,6 +18,7 @@ interface DetailItem {
 const route = useRoute()
 const router = useRouter()
 const usersStore = useUsersStore()
+const { listQuery } = storeToRefs(usersStore)
 
 const userId = computed(() => Number(props.id))
 const user = computed(() => usersStore.getUser(userId.value))
@@ -69,52 +72,31 @@ async function loadUser(): Promise<void> {
 
 watch(userId, loadUser, { immediate: true })
 
-const isDeleteModalOpen = ref(false)
-const isDeleting = ref(false)
-const deleteError = ref<string | null>(null)
+const isDeleteDialogOpen = ref(false)
 
-function openDeleteModal(): void {
-  deleteError.value = null
-  isDeleteModalOpen.value = true
-}
-
-async function confirmDelete(): Promise<void> {
-  isDeleting.value = true
-  deleteError.value = null
-
-  try {
-    await usersStore.removeUser(userId.value)
-    isDeleteModalOpen.value = false
-    router.push({ name: 'users', query: usersStore.listQuery })
-  } catch (e) {
-    deleteError.value = e instanceof Error ? e.message : 'Не вдалося видалити користувача'
-  } finally {
-    isDeleting.value = false
-  }
+function backToList(): void {
+  router.push({ name: 'users', query: listQuery.value })
 }
 </script>
 
 <template>
-  <RouterLink :to="{ name: 'users', query: usersStore.listQuery }" class="back-link">
-    <i class="bi bi-arrow-left"></i>
+  <RouterLink :to="{ name: 'users', query: listQuery }" class="back-link">
+    <i class="pi pi-arrow-left"></i>
     До списку учасників
   </RouterLink>
 
-  <div class="card">
-    <div v-if="isLoading && !user" class="card-body state">
-      <i class="bi bi-arrow-repeat state__spinner"></i>
+  <AppCard>
+    <div v-if="isLoading && !user" class="state">
+      <i class="pi pi-spin pi-spinner"></i>
       Завантаження...
     </div>
 
-    <div v-else-if="loadError" class="card-body state state--error">
-      <p class="state__text">
-        <i class="bi bi-exclamation-triangle"></i>
-        {{ loadError }}
-      </p>
-      <button type="button" class="btn btn-primary" @click="loadUser">Спробувати ще раз</button>
+    <div v-else-if="loadError" class="state">
+      <AppMessage severity="error">{{ loadError }}</AppMessage>
+      <AppButton label="Спробувати ще раз" icon="pi pi-refresh" @click="loadUser" />
     </div>
 
-    <div v-else-if="user" class="card-body">
+    <template v-else-if="user">
       <div class="profile">
         <img
           v-if="user.image"
@@ -123,23 +105,27 @@ async function confirmDelete(): Promise<void> {
           class="profile__avatar"
         />
         <span v-else class="profile__avatar profile__avatar--empty">
-          <i class="bi bi-person"></i>
+          <i class="pi pi-user"></i>
         </span>
 
         <div class="profile__info">
-          <h1 class="profile__name">{{ user.firstName }} {{ user.lastName }}</h1>
-          <p class="profile__username">@{{ user.username }}</p>
+          <h1 class="page-title">{{ user.firstName }} {{ user.lastName }}</h1>
+          <p class="muted profile__username">@{{ user.username }}</p>
         </div>
 
         <div v-if="!isEditing" class="profile__actions">
-          <RouterLink :to="{ name: 'user-edit', params: { id } }" class="btn btn-primary">
-            <i class="bi bi-pencil"></i>
-            Редагувати
-          </RouterLink>
-          <button type="button" class="btn btn-danger" @click="openDeleteModal">
-            <i class="bi bi-trash"></i>
-            Видалити
-          </button>
+          <AppButton
+            :to="{ name: 'user-edit', params: { id } }"
+            label="Редагувати"
+            icon="pi pi-pencil"
+          />
+          <AppButton
+            label="Видалити"
+            icon="pi pi-trash"
+            severity="danger"
+            variant="outlined"
+            @click="isDeleteDialogOpen = true"
+          />
         </div>
       </div>
 
@@ -151,81 +137,51 @@ async function confirmDelete(): Promise<void> {
       </dl>
 
       <RouterView />
-    </div>
-  </div>
+    </template>
+  </AppCard>
 
-  <DeleteUserModal
-    v-model="isDeleteModalOpen"
-    :user="user"
-    :is-deleting="isDeleting"
-    :error-message="deleteError"
-    @confirm="confirmDelete"
-  />
+  <DeleteUserDialog v-model:visible="isDeleteDialogOpen" :user="user" @deleted="backToList" />
 </template>
 
-<style scoped>
-.back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 16px;
-  color: #495057;
-  text-decoration: none;
-}
-
-.back-link:hover {
-  color: #0d6efd;
-}
-
+<style scoped lang="scss">
 .profile {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 20px;
   margin-bottom: 28px;
-}
 
-.profile__avatar {
-  flex-shrink: 0;
-  width: 96px;
-  height: 96px;
-  border: 3px solid #e7f1ff;
-  border-radius: 50%;
-  background-color: #f1f3f5;
-  object-fit: cover;
-}
+  &__avatar {
+    flex-shrink: 0;
+    width: 96px;
+    height: 96px;
+    border: 3px solid var(--p-highlight-background);
+    border-radius: 50%;
+    background-color: var(--p-content-hover-background);
+    object-fit: cover;
 
-.profile__avatar--empty {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #6c757d;
-  font-size: 2.5rem;
-}
+    &--empty {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--p-text-muted-color);
+      font-size: 2.5rem;
+    }
+  }
 
-.profile__info {
-  flex: 1;
-  min-width: 200px;
-}
+  &__info {
+    flex: 1;
+    min-width: 200px;
+  }
 
-.profile__name {
-  font-size: 1.75rem;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
+  &__username {
+    margin: 0;
+  }
 
-.profile__username {
-  color: #6c757d;
-  margin: 0;
-}
-
-.profile__actions {
-  display: flex;
-  gap: 12px;
-}
-
-.profile__actions .bi {
-  margin-right: 6px;
+  &__actions {
+    display: flex;
+    gap: 12px;
+  }
 }
 
 .details {
@@ -233,52 +189,23 @@ async function confirmDelete(): Promise<void> {
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 16px;
   margin: 0;
-}
 
-.details__item {
-  padding: 14px 16px;
-  border-radius: 8px;
-  background-color: #f8f9fa;
-}
+  &__item {
+    padding: 14px 16px;
+    border-radius: 8px;
+    background-color: var(--p-content-hover-background);
+  }
 
-.details__label {
-  margin-bottom: 4px;
-  color: #6c757d;
-  font-size: 0.85rem;
-  font-weight: 500;
-}
+  &__label {
+    margin-bottom: 4px;
+    color: var(--p-text-muted-color);
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
 
-.details__value {
-  margin: 0;
-  word-break: break-word;
-}
-
-.state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding: 48px 16px;
-  color: #6c757d;
-  text-align: center;
-}
-
-.state--error {
-  color: #dc3545;
-}
-
-.state__text {
-  margin: 0;
-}
-
-.state__spinner {
-  font-size: 1.75rem;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+  &__value {
+    margin: 0;
+    word-break: break-word;
   }
 }
 </style>

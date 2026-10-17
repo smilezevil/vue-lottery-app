@@ -12,32 +12,43 @@ defineEmits<{
 
 <template>
   <span class="winner-chip">
+    <i class="pi pi-star-fill"></i>
     {{ winner.firstName }} {{ winner.lastName }}
-    <button type="button" class="winner-chip__remove" @click="$emit('remove', winner.id)">
-      ×
+    <button
+      type="button"
+      class="winner-chip__remove"
+      aria-label="Прибрати переможця"
+      @click="$emit('remove', winner.id)"
+    >
+      <i class="pi pi-times"></i>
     </button>
   </span>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .winner-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background-color: #0d6efd;
-  color: #fff;
+  gap: 8px;
   padding: 6px 10px;
-  border-radius: 4px;
+  border-radius: 6px;
+  background-color: var(--p-primary-color);
+  color: var(--p-primary-contrast-color);
   font-size: 0.9rem;
-}
 
-.winner-chip__remove {
-  background: none;
-  border: none;
-  color: #fff;
-  font-size: 1rem;
-  line-height: 1;
-  cursor: pointer;
-  padding: 0;
+  &__remove {
+    display: inline-flex;
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font-size: 0.75rem;
+    cursor: pointer;
+    opacity: 0.8;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
 }
 </style>

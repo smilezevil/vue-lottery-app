@@ -19,8 +19,6 @@
   "dependencies": {
     "@primeuix/themes": "^2.0.3",
     "@vee-validate/zod": "^4.15.1",
-    "bootstrap": "^5.3.8",
-    "bootstrap-icons": "^1.13.1",
     "pinia": "^4.0.3",
     "primeicons": "^7.0.0",
     "primevue": "^4.5.5",

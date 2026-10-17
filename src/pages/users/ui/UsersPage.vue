@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
-import { buildUsersQuery, USERS_PAGE_SIZE, useUsersStore } from '@/entities/user/model/users.store'
-import type { User } from '@/entities/user'
-import WinnersList from '@/features/pick-winner/ui/WinnersList.vue'
-import SearchBar from '@/shared/ui/SearchBar/SearchBar.vue'
-import ParticipantsTable from '@/widgets/users-table/ui/UsersTable.vue'
-import AppPagination from '@/shared/ui/AppPagination/AppPagination.vue'
-import DeleteUserModal from '@/features/user-delete/ui/DeleteUserModal.vue'
+import { buildUsersQuery, USERS_PAGE_SIZE, useUsersStore } from '@/entities/user'
+import { WinnersList } from '@/features/pick-winner'
+import { UsersTable } from '@/widgets/users-table'
+import { AppButton, AppCard, AppMessage, AppPagination, AppSearchInput } from '@/shared/ui'
 
 const route = useRoute()
 const router = useRouter()
 const usersStore = useUsersStore()
+
+const { users, total, totalPages, isLoading, error } = storeToRefs(usersStore)
+const { fetchUsers } = usersStore
 
 const currentPage = computed(() => {
   const page = Number(route.query.page)
@@ -35,42 +36,13 @@ function handleSearch(query: string): void {
 }
 
 function retry(): void {
-  usersStore.fetchUsers(currentPage.value, searchQuery.value, true)
-}
-
-const userToDelete = ref<User | null>(null)
-const isDeleteModalOpen = ref(false)
-const isDeleting = ref(false)
-const deleteError = ref<string | null>(null)
-
-function openDeleteModal(user: User): void {
-  userToDelete.value = user
-  deleteError.value = null
-  isDeleteModalOpen.value = true
-}
-
-async function confirmDelete(): Promise<void> {
-  if (!userToDelete.value) {
-    return
-  }
-
-  isDeleting.value = true
-  deleteError.value = null
-
-  try {
-    await usersStore.removeUser(userToDelete.value.id)
-    isDeleteModalOpen.value = false
-  } catch (e) {
-    deleteError.value = e instanceof Error ? e.message : 'Не вдалося видалити користувача'
-  } finally {
-    isDeleting.value = false
-  }
+  fetchUsers(currentPage.value, searchQuery.value, true)
 }
 
 watch(
   [currentPage, searchQuery],
   ([page, query]) => {
-    usersStore.fetchUsers(page, query)
+    fetchUsers(page, query)
   },
   { immediate: true },
 )
@@ -79,64 +51,35 @@ watch(
 <template>
   <WinnersList />
 
-  <div class="card">
-    <div class="card-body">
-      <div class="users-toolbar">
-        <h2 class="users-title">
-          Учасники
-          <span class="users-count">{{ usersStore.total }}</span>
-        </h2>
-        <div class="users-toolbar__actions">
-          <SearchBar
-            :value="searchQuery"
-            placeholder="Пошук за іменем..."
-            @filter-by-name="handleSearch"
-          />
-          <RouterLink :to="{ name: 'user-create' }" class="btn btn-primary add-btn">
-            <i class="bi bi-plus-lg"></i>
-            Новий учасник
-          </RouterLink>
-        </div>
-      </div>
-
-      <div v-if="usersStore.isLoading" class="state">
-        <i class="bi bi-arrow-repeat state__spinner"></i>
-        Завантаження...
-      </div>
-
-      <div v-else-if="usersStore.error" class="state state--error">
-        <p class="state__text">
-          <i class="bi bi-exclamation-triangle"></i>
-          {{ usersStore.error }}
-        </p>
-        <button type="button" class="btn btn-primary" @click="retry">Спробувати ще раз</button>
-      </div>
-
-      <template v-else>
-        <ParticipantsTable
-          :users="usersStore.users"
-          :start-index="startIndex"
-          @delete="openDeleteModal"
+  <AppCard>
+    <div class="users-toolbar">
+      <h2 class="users-title">
+        Учасники
+        <span class="users-count">{{ total }}</span>
+      </h2>
+      <div class="users-toolbar__actions">
+        <AppSearchInput
+          :value="searchQuery"
+          placeholder="Пошук за іменем..."
+          @search="handleSearch"
         />
-        <AppPagination
-          :page="currentPage"
-          :total-pages="usersStore.totalPages"
-          @change="goToPage"
-        />
-      </template>
+        <AppButton :to="{ name: 'user-create' }" label="Новий учасник" icon="pi pi-plus" />
+      </div>
     </div>
-  </div>
 
-  <DeleteUserModal
-    v-model="isDeleteModalOpen"
-    :user="userToDelete"
-    :is-deleting="isDeleting"
-    :error-message="deleteError"
-    @confirm="confirmDelete"
-  />
+    <div v-if="error" class="state">
+      <AppMessage severity="error">{{ error }}</AppMessage>
+      <AppButton label="Спробувати ще раз" icon="pi pi-refresh" @click="retry" />
+    </div>
+
+    <template v-else>
+      <UsersTable :users="users" :start-index="startIndex" :loading="isLoading" />
+      <AppPagination :page="currentPage" :total-pages="totalPages" @change="goToPage" />
+    </template>
+  </AppCard>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .users-toolbar {
   display: flex;
   align-items: center;
@@ -144,22 +87,15 @@ watch(
   flex-wrap: wrap;
   gap: 16px;
   margin-bottom: 20px;
-}
 
-.users-toolbar__actions {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  flex: 1;
-  justify-content: flex-end;
-}
-
-.add-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
+  &__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    flex: 1;
+    gap: 12px;
+  }
 }
 
 .users-title {
@@ -174,38 +110,9 @@ watch(
 .users-count {
   padding: 2px 10px;
   border-radius: 999px;
-  background-color: #e7f1ff;
-  color: #0d6efd;
+  background-color: var(--p-highlight-background);
+  color: var(--p-highlight-color);
   font-size: 0.9rem;
   font-weight: 500;
-}
-
-.state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding: 48px 16px;
-  color: #6c757d;
-  text-align: center;
-}
-
-.state--error {
-  color: #dc3545;
-}
-
-.state__text {
-  margin: 0;
-}
-
-.state__spinner {
-  font-size: 1.75rem;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 </style>

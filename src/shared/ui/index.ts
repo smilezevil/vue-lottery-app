@@ -11,8 +11,3 @@ export { default as AppToast } from './AppToast/AppToast.vue'
 export { useNotify } from './AppToast/useNotify'
 export { default as AppCard } from './AppCard/AppCard.vue'
 export { default as AppMessage } from './AppMessage/AppMessage.vue'
-
-export { default as SearchBar } from './SearchBar/SearchBar.vue'
-export { default as BaseButton } from './BaseButton/BaseButton.vue'
-export { default as BaseInput } from './BaseInput/BaseInput.vue'
-export { default as BaseModal } from './BaseModal/BaseModal.vue'

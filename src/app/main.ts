@@ -1,5 +1,4 @@
 import './styles/main.scss'
-import 'bootstrap-icons/font/bootstrap-icons.css'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'

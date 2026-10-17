@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useUsersStore } from '@/entities/user/model/users.store'
+import { useUsersStore } from '@/entities/user'
 import type { CreateUserDto } from '@/entities/user'
-import UserForm from '@/features/user-form/ui/UserForm.vue'
+import { UserForm } from '@/features/user-form'
+import { useNotify } from '@/shared/ui'
 
 const props = defineProps<{
   id: string
@@ -11,6 +12,7 @@ const props = defineProps<{
 
 const router = useRouter()
 const usersStore = useUsersStore()
+const notify = useNotify()
 
 const userId = computed(() => Number(props.id))
 
@@ -44,7 +46,8 @@ async function handleSubmit(values: CreateUserDto): Promise<void> {
   submitError.value = null
 
   try {
-    await usersStore.updateUser(userId.value, values)
+    const user = await usersStore.updateUser(userId.value, values)
+    notify.success('Дані оновлено', `${user.firstName} ${user.lastName}`)
     backToDetails()
   } catch (e) {
     submitError.value = e instanceof Error ? e.message : 'Не вдалося оновити дані'
@@ -56,7 +59,7 @@ async function handleSubmit(values: CreateUserDto): Promise<void> {
 
 <template>
   <section class="edit-section">
-    <h2 class="edit-section__title">Редагування даних</h2>
+    <h2 class="section-title">Редагування даних</h2>
 
     <UserForm
       v-if="initialValues"
@@ -71,15 +74,9 @@ async function handleSubmit(values: CreateUserDto): Promise<void> {
   </section>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .edit-section {
   padding-top: 24px;
-  border-top: 1px solid #dee2e6;
-}
-
-.edit-section__title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 20px;
+  border-top: 1px solid var(--p-content-border-color);
 }
 </style>

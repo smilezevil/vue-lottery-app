@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import type { Component } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import type { RouteMeta } from 'vue-router'
-import { useSessionStore } from '@/entities/session/model/session.store'
+import { useSessionStore } from '@/entities/session'
+import { AppToast, useNotify } from '@/shared/ui'
 import DefaultLayout from './layouts/DefaultLayout.vue'
 import AuthLayout from './layouts/AuthLayout.vue'
 
@@ -17,6 +19,8 @@ const layouts: Record<LayoutName, Component> = {
 const route = useRoute()
 const router = useRouter()
 const sessionStore = useSessionStore()
+const { isAuthenticated } = storeToRefs(sessionStore)
+const notify = useNotify()
 
 const isRouterReady = ref(false)
 
@@ -28,17 +32,16 @@ onMounted(async () => {
   await sessionStore.fetchCurrentUser()
 })
 
-watch(
-  () => sessionStore.isAuthenticated,
-  (isAuthenticated) => {
-    if (!isAuthenticated && route.meta.requiresAuth) {
-      router.push({ name: 'login', query: { redirect: route.fullPath } })
-    }
-  },
-)
+watch(isAuthenticated, (authenticated) => {
+  if (!authenticated && route.meta.requiresAuth) {
+    notify.error('Помилка авторизації', 'Сесія завершилась, увійдіть знову')
+    router.push({ name: 'login', query: { redirect: route.fullPath } })
+  }
+})
 </script>
 
 <template>
+  <AppToast />
   <component :is="currentLayout" v-if="isRouterReady">
     <RouterView />
   </component>

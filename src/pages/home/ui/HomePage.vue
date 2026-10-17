@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { AppButton, AppCard } from '@/shared/ui'
+
 const REPOSITORY_URL = 'https://github.com/smilezevil/vue-lottery-app'
 
 const features: string[] = [
@@ -14,87 +16,51 @@ const technologies: string[] = [
   'TypeScript',
   'Vue Router',
   'Pinia',
-  'Bootstrap 5',
+  'PrimeVue',
+  'Feature-Sliced Design',
   'SCSS',
   'Vite',
   'ESLint',
+  'Steiger',
   'DummyJSON REST API',
 ]
 </script>
 
 <template>
-  <div class="card">
-    <div class="card-body">
-      <h1 class="page-title">Vue Lottery App</h1>
-      <p class="lead-text">
-        Односторінковий застосунок для проведення лотереї та керування її учасниками.
-      </p>
+  <AppCard>
+    <h1 class="page-title">Vue Lottery App</h1>
+    <p class="muted lead-text">
+      Односторінковий застосунок для проведення лотереї та керування її учасниками.
+    </p>
 
-      <h2 class="section-title">Можливості</h2>
-      <ul class="feature-list">
-        <li v-for="feature in features" :key="feature">{{ feature }}</li>
-      </ul>
+    <h2 class="section-title">Можливості</h2>
+    <ul class="feature-list">
+      <li v-for="feature in features" :key="feature">{{ feature }}</li>
+    </ul>
 
-      <h2 class="section-title">Технології</h2>
-      <div class="tag-list">
-        <span v-for="technology in technologies" :key="technology" class="tag">
-          {{ technology }}
-        </span>
-      </div>
-
-      <a :href="REPOSITORY_URL" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
-        <i class="bi bi-github"></i>
-        Проєкт на GitHub
-      </a>
+    <h2 class="section-title">Технології</h2>
+    <div class="tag-list">
+      <span v-for="technology in technologies" :key="technology" class="tag">
+        {{ technology }}
+      </span>
     </div>
-  </div>
+
+    <AppButton :href="REPOSITORY_URL" label="Проєкт на GitHub" icon="pi pi-github" />
+  </AppCard>
 </template>
 
-<style scoped>
-.page-title {
-  font-size: 2rem;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
+<style scoped lang="scss">
 .lead-text {
-  color: #6c757d;
-  font-size: 1.1rem;
   margin-bottom: 32px;
-}
-
-.section-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 12px;
+  font-size: 1.1rem;
 }
 
 .feature-list {
-  margin-bottom: 32px;
+  margin: 0 0 32px;
   padding-left: 20px;
-}
 
-.feature-list li {
-  margin-bottom: 6px;
-}
-
-.tag-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 32px;
-}
-
-.tag {
-  padding: 6px 12px;
-  border-radius: 6px;
-  background-color: #e7f1ff;
-  color: #0d6efd;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.btn .bi {
-  margin-right: 6px;
+  li {
+    margin-bottom: 6px;
+  }
 }
 </style>
