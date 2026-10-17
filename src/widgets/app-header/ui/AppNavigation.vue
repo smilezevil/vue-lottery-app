@@ -2,6 +2,7 @@
 import { storeToRefs } from 'pinia'
 import { useSessionStore } from '@/entities/session'
 import { LogoutButton } from '@/features/auth'
+import { ThemeToggle } from '@/features/theme-toggle'
 import { AppButton } from '@/shared/ui'
 
 interface NavItem {
@@ -23,6 +24,8 @@ const { isAuthenticated, user } = storeToRefs(useSessionStore())
     <RouterLink v-for="item in navItems" :key="item.to" :to="item.to" class="nav-item">
       {{ item.label }}
     </RouterLink>
+
+    <ThemeToggle />
 
     <template v-if="isAuthenticated">
       <span v-if="user" class="current-user">

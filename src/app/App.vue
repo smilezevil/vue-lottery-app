@@ -5,6 +5,7 @@ import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import type { RouteMeta } from 'vue-router'
 import { useSessionStore } from '@/entities/session'
+import { useThemeStore } from '@/features/theme-toggle'
 import { AppToast, useNotify } from '@/shared/ui'
 import DefaultLayout from './layouts/DefaultLayout.vue'
 import AuthLayout from './layouts/AuthLayout.vue'
@@ -21,6 +22,8 @@ const router = useRouter()
 const sessionStore = useSessionStore()
 const { isAuthenticated } = storeToRefs(sessionStore)
 const notify = useNotify()
+
+useThemeStore()
 
 const isRouterReady = ref(false)
 
