@@ -81,4 +81,77 @@ flowchart LR
         widgetHeader["app-header"]
         widgetTable["users-table"]
     end
-    subgraph
+    subgraph featuresLayer["features"]
+        featureAuth["auth"]
+        featureForm["user-form"]
+        featureDelete["user-delete"]
+        featureWinner["pick-winner"]
+        featureTheme["theme-toggle"]
+    end
+    subgraph entitiesLayer["entities"]
+        entityUser["user"]
+        entitySession["session"]
+    end
+    subgraph sharedLayer["shared"]
+        sharedApi["api"]
+        sharedUi["ui"]
+        sharedConfig["config"]
+    end
+
+    pageUsers --> widgetTable
+    pageUsers --> featureWinner
+    pageUsers --> entityUser
+    pageDetails --> featureDelete
+    pageDetails --> featureForm
+    pageDetails --> entityUser
+    pageCreate --> featureForm
+    pageCreate --> entityUser
+    pageLogin --> featureAuth
+    widgetHeader --> featureAuth
+    widgetHeader --> featureTheme
+    widgetHeader --> entitySession
+    widgetTable --> featureDelete
+    widgetTable --> entityUser
+    featureAuth --> entitySession
+    featureAuth --> sharedUi
+    featureDelete --> entityUser
+    featureWinner --> entityUser
+    featureForm --> entityUser
+    entityUser --> sharedApi
+    entitySession --> sharedApi
+    sharedApi --> sharedConfig
+```
+
+### Repository у FSD
+
+| Частина | Розташування |
+| --- | --- |
+| HTTP-клієнт, інтерфейси `Readable`, `Creatable`, `Editable`, `Deletable` | `shared/api` |
+| `ServiceProvider` (універсальний реєстр сервісів) | `shared/api` |
+| `User`, `CreateUserDto`, `UpdateUserDto` | `entities/user/model` |
+| `UserService` | `entities/user/api` |
+| `AuthService` | `entities/session/api` |
+| Реєстрація сервісів у `ServiceProvider` | `app/providers/services.ts` |
+
+## Збереження стану: вручну чи плагіном
+
+У проєкті використано обидва підходи, щоб їх порівняти.
+
+**Вручну — `entities/session/model/session.store.ts`.** Стор сам читає токени з
+`localStorage` при створенні і сам записує або видаляє їх у кожній дії
+(`setSession`, `setUser`, `clearSession`).
+
+**Плагіном — `features/theme-toggle/model/theme.store.ts`.** Підключено
+`pinia-plugin-persistedstate` (`app/providers/pinia.ts`). Стору досить вказати опцію
+`persist`, а читання й запис у `localStorage` плагін виконує сам після кожної зміни стану.
+
+| | Вручну (session) | Плагін (theme) |
+| --- | --- | --- |
+| Обсяг коду | більше: окремі `getItem`/`setItem`/`removeItem` у кожній дії | одна опція `persist` |
+| Ризик помилки | легко забути зберегти нове поле | зберігається весь стан (або поля з `pick`) |
+| Контроль | повний: окремі ключі, власна логіка очищення, валідація JSON | менше гнучкості, формат запису визначає плагін |
+| Коли зберігається | лише у місцях, де ми явно це написали | після будь-якої зміни стану |
+| Залежності | немає | додатковий пакет |
+
+Для токенів залишено ручну реалізацію: це чутливі дані, тому краще явно контролювати,
+коли саме вони записуються і видаляються. Для простих налаштувань (тема) плагін зручніший.
