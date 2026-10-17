@@ -71,36 +71,14 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    subgraph L_PAGES["pages"]
-        P_USERS["users"]
-        P_DETAILS["user-details"]
-        P_CREATE["user-create"]
-        P_LOGIN["login"]
+    subgraph pagesLayer["pages"]
+        pageUsers["users"]
+        pageDetails["user-details"]
+        pageCreate["user-create"]
+        pageLogin["login"]
     end
-    subgraph L_WIDGETS["widgets"]
-        W_HEADER["app-header"]
-        W_TABLE["users-table"]
+    subgraph widgetsLayer["widgets"]
+        widgetHeader["app-header"]
+        widgetTable["users-table"]
     end
-    subgraph L_FEATURES["features"]
-        F_AUTH["auth"]
-        F_FORM["user-form"]
-        F_DELETE["user-delete"]
-        F_WINNER["pick-winner"]
-        F_THEME["theme-toggle"]
-    end
-    subgraph L_ENTITIES["entities"]
-        E_USER["user"]
-        E_SESSION["session"]
-    end
-    subgraph L_SHARED["shared"]
-        S_API["api"]
-        S_UI["ui"]
-        S_CONFIG["config"]
-    end
-
-    P_USERS --> W_TABLE
-    P_USERS --> F_WINNER
-    P_USERS --> E_USER
-    P_DETAILS --> F_DELETE
-    P_DETAILS --> F_FORM
-    P_DETAILS -->
+    subgraph
