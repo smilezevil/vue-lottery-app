@@ -7,7 +7,7 @@ import App from './App.vue'
 import router from './providers/router'
 import { registerServices } from './providers/services'
 import { setAuthHandler } from '@/shared/api'
-import { useAuthStore } from '@/entities/session'
+import { useSessionStore } from '@/entities/session'
 
 registerServices()
 
@@ -16,10 +16,10 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 
-const authStore = useAuthStore()
+const session = useSessionStore()
 setAuthHandler({
-  getAccessToken: () => authStore.accessToken,
-  refreshAccessToken: () => authStore.refreshAccessToken(),
+  getAccessToken: () => session.accessToken,
+  refreshAccessToken: () => session.refreshAccessToken(),
 })
 
 app.mount('#app')

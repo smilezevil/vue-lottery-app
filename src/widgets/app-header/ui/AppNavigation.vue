@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/entities/session/model/session.store'
+import { useSessionStore } from '@/entities/session/model/session.store'
 
 interface NavItem {
   label: string
@@ -14,10 +14,10 @@ const navItems: NavItem[] = [
 ]
 
 const router = useRouter()
-const authStore = useAuthStore()
+const sessionStore = useSessionStore()
 
 function logout(): void {
-  authStore.logout()
+  sessionStore.logout()
   router.push({ name: 'login' })
 }
 </script>
@@ -28,15 +28,15 @@ function logout(): void {
       {{ item.label }}
     </RouterLink>
 
-    <template v-if="authStore.isAuthenticated">
-      <span v-if="authStore.user" class="current-user">
+    <template v-if="sessionStore.isAuthenticated">
+      <span v-if="sessionStore.user" class="current-user">
         <img
-          v-if="authStore.user.image"
-          :src="authStore.user.image"
-          :alt="authStore.user.firstName"
+          v-if="sessionStore.user.image"
+          :src="sessionStore.user.image"
+          :alt="sessionStore.user.firstName"
           class="current-user__avatar"
         />
-        {{ authStore.user.firstName }}
+        {{ sessionStore.user.firstName }}
       </span>
       <button type="button" class="nav-item nav-item--auth" @click="logout">
         <i class="bi bi-box-arrow-right"></i>

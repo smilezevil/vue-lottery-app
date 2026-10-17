@@ -4,7 +4,7 @@ import { useForm } from 'vee-validate'
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { z } from 'zod'
-import { useAuthStore } from '@/entities/session/model/session.store'
+import { useSessionStore } from '@/entities/session/model/session.store'
 import BaseInput from '@/shared/ui/BaseInput/BaseInput.vue'
 import BaseButton from '@/shared/ui/BaseButton/BaseButton.vue'
 
@@ -13,7 +13,7 @@ const MIN_PASSWORD_LENGTH = 6
 
 const route = useRoute()
 const router = useRouter()
-const authStore = useAuthStore()
+const sessionStore = useSessionStore()
 
 const loginSchema = toTypedSchema(
   z.object({
@@ -44,7 +44,7 @@ const onSubmit = handleSubmit(async (values) => {
   loginError.value = null
 
   try {
-    await authStore.login(values)
+    await sessionStore.login(values)
 
     const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : null
     router.push(redirect ?? { name: 'users' })

@@ -3,7 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import type { Component } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { RouteMeta } from 'vue-router'
-import { useAuthStore } from '@/entities/session/model/session.store'
+import { useSessionStore } from '@/entities/session/model/session.store'
 import DefaultLayout from './layouts/DefaultLayout.vue'
 import AuthLayout from './layouts/AuthLayout.vue'
 
@@ -16,7 +16,7 @@ const layouts: Record<LayoutName, Component> = {
 
 const route = useRoute()
 const router = useRouter()
-const authStore = useAuthStore()
+const sessionStore = useSessionStore()
 
 const isRouterReady = ref(false)
 
@@ -25,11 +25,11 @@ const currentLayout = computed(() => layouts[route.meta.layout ?? 'default'])
 onMounted(async () => {
   await router.isReady()
   isRouterReady.value = true
-  await authStore.fetchCurrentUser()
+  await sessionStore.fetchCurrentUser()
 })
 
 watch(
-  () => authStore.isAuthenticated,
+  () => sessionStore.isAuthenticated,
   (isAuthenticated) => {
     if (!isAuthenticated && route.meta.requiresAuth) {
       router.push({ name: 'login', query: { redirect: route.fullPath } })

@@ -8,7 +8,6 @@ import type { CreateUserDto, UpdateUserDto, User } from './types'
 const usersService = () => ServiceProvider.get<UserService>('users')
 
 export const USERS_PAGE_SIZE = 10
-const MAX_WINNERS = 3
 
 export function buildUsersQuery(page: number, query: string): LocationQueryRaw {
   const result: LocationQueryRaw = {}
@@ -34,6 +33,7 @@ function matchesQuery(user: User, query: string): boolean {
 }
 
 export const useUsersStore = defineStore('users', () => {
+
   const serverUsers = ref<User[]>([])
   const serverTotal = ref(0)
   const page = ref(1)
@@ -46,14 +46,13 @@ export const useUsersStore = defineStore('users', () => {
   const deletedUsers = ref<User[]>([])
   const userCache = ref<Record<number, User>>({})
 
-  const winners = ref<User[]>([])
-
   let lastRequestKey = ''
   let requestCounter = 0
 
   function isDeleted(id: number): boolean {
     return deletedUsers.value.some((user) => user.id === id)
   }
+
 
   const visibleCreatedUsers = computed(() =>
     createdUsers.value.filter((user) => matchesQuery(user, query.value)),
@@ -72,11 +71,14 @@ export const useUsersStore = defineStore('users', () => {
     return Math.max(0, serverTotal.value + visibleCreatedUsers.value.length - removed)
   })
 
+  const hasUsers = computed(() => users.value.length > 0)
+
   const totalPages = computed(() => Math.max(1, Math.ceil(total.value / USERS_PAGE_SIZE)))
 
   const listQuery = computed(() => buildUsersQuery(page.value, query.value))
 
-  async function fetchUsers(newPage: number, newQuery: string, force = false): Promise<void> {
+
+  async function fetchUsers(newPage = 1, newQuery = '', force = false): Promise<void> {
     const requestKey = `${newPage}|${newQuery}`
     if (!force && requestKey === lastRequestKey && !error.value) {
       return
@@ -129,7 +131,7 @@ export const useUsersStore = defineStore('users', () => {
     )
   }
 
-  async function loadUser(id: number): Promise<User> {
+  async function fetchUser(id: number): Promise<User> {
     if (isDeleted(id)) {
       throw new Error('Цього користувача видалено')
     }
@@ -146,10 +148,6 @@ export const useUsersStore = defineStore('users', () => {
 
   function withoutStaleBirthDate(current: User, updated: User): User {
     return updated.age === current.age ? updated : { ...updated, birthDate: undefined }
-  }
-
-  function syncWinner(user: User): void {
-    winners.value = winners.value.map((winner) => (winner.id === user.id ? user : winner))
   }
 
   async function createUser(data: CreateUserDto): Promise<User> {
@@ -173,7 +171,6 @@ export const useUsersStore = defineStore('users', () => {
     if (createdIndex !== -1) {
       const updated = withoutStaleBirthDate(current, { ...current, ...data })
       createdUsers.value[createdIndex] = updated
-      syncWinner(updated)
       return updated
     }
 
@@ -181,68 +178,38 @@ export const useUsersStore = defineStore('users', () => {
     const updated = withoutStaleBirthDate(current, { ...current, ...response, ...data, id })
 
     updatedUsers.value[id] = updated
-    syncWinner(updated)
     return updated
   }
 
-  async function deleteUser(id: number): Promise<void> {
+  async function removeUser(id: number): Promise<void> {
     const createdIndex = createdUsers.value.findIndex((user) => user.id === id)
 
     if (createdIndex !== -1) {
       createdUsers.value.splice(createdIndex, 1)
-    } else {
-      const current = getUser(id) ?? serverUsers.value.find((user) => user.id === id)
-      await usersService().delete(id)
-
-      if (current) {
-        deletedUsers.value.push(current)
-      }
-    }
-
-    removeWinner(id)
-  }
-
-  const availableForWinning = computed(() =>
-    users.value.filter((user) => !winners.value.some((winner) => winner.id === user.id)),
-  )
-
-  const canPickWinner = computed(
-    () => winners.value.length < MAX_WINNERS && availableForWinning.value.length > 0,
-  )
-
-  function pickWinner(): void {
-    if (!canPickWinner.value) {
       return
     }
 
-    const pool = availableForWinning.value
-    const chosen = pool[Math.floor(Math.random() * pool.length)]
+    const current = getUser(id) ?? serverUsers.value.find((user) => user.id === id)
+    await usersService().delete(id)
 
-    if (chosen) {
-      winners.value.push(chosen)
+    if (current) {
+      deletedUsers.value.push(current)
     }
-  }
-
-  function removeWinner(id: number): void {
-    winners.value = winners.value.filter((winner) => winner.id !== id)
   }
 
   return {
     users,
     total,
     totalPages,
-    listQuery,
     isLoading,
     error,
-    winners,
-    canPickWinner,
+    hasUsers,
+    listQuery,
     fetchUsers,
     getUser,
-    loadUser,
+    fetchUser,
     createUser,
     updateUser,
-    deleteUser,
-    pickWinner,
-    removeWinner,
+    removeUser,
   }
 })

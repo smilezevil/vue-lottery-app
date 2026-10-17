@@ -1,17 +1,12 @@
 <script setup lang="ts">
-import type { User } from '@/entities/user'
+import { storeToRefs } from 'pinia'
+import { useWinnersStore } from '../model/winners.store'
 import WinnerItem from './WinnerItem.vue'
 import BaseButton from '@/shared/ui/BaseButton/BaseButton.vue'
 
-defineProps<{
-  winners: User[]
-  canPickWinner: boolean
-}>()
-
-const emit = defineEmits<{
-  pick: []
-  remove: [id: number]
-}>()
+const winnersStore = useWinnersStore()
+const { winners, canPickWinner } = storeToRefs(winnersStore)
+const { pickWinner, removeWinner } = winnersStore
 </script>
 
 <template>
@@ -23,10 +18,10 @@ const emit = defineEmits<{
           v-for="winner in winners"
           :key="winner.id"
           :winner="winner"
-          @remove="emit('remove', $event)"
+          @remove="removeWinner"
         />
       </div>
-      <BaseButton :disabled="!canPickWinner" @click="emit('pick')">New winner</BaseButton>
+      <BaseButton :disabled="!canPickWinner" @click="pickWinner">New winner</BaseButton>
     </div>
   </div>
 </template>

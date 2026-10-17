@@ -59,7 +59,7 @@ async function loadUser(): Promise<void> {
   loadError.value = null
 
   try {
-    await usersStore.loadUser(userId.value)
+    await usersStore.fetchUser(userId.value)
   } catch (e) {
     loadError.value = e instanceof Error ? e.message : 'Не вдалося завантажити користувача'
   } finally {
@@ -83,7 +83,7 @@ async function confirmDelete(): Promise<void> {
   deleteError.value = null
 
   try {
-    await usersStore.deleteUser(userId.value)
+    await usersStore.removeUser(userId.value)
     isDeleteModalOpen.value = false
     router.push({ name: 'users', query: usersStore.listQuery })
   } catch (e) {

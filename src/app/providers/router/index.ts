@@ -1,7 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '@/entities/session/model/session.store'
-
-const APP_NAME = 'Vue Lottery'
+import { setupGuards } from './guards'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -67,20 +65,6 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to) => {
-  const authStore = useAuthStore()
-
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    return { name: 'login', query: { redirect: to.fullPath } }
-  }
-
-  if (to.meta.guestOnly && authStore.isAuthenticated) {
-    return { name: 'users' }
-  }
-})
-
-router.afterEach((to) => {
-  document.title = to.meta.title ? `${to.meta.title} | ${APP_NAME}` : APP_NAME
-})
+setupGuards(router)
 
 export default router

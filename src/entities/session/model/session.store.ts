@@ -6,9 +6,10 @@ import type { AuthTokens, AuthUser, LoginCredentials } from './types'
 
 const authService = () => ServiceProvider.get<AuthService>('auth')
 
-const ACCESS_TOKEN_KEY = 'lottery-access-token'
-const REFRESH_TOKEN_KEY = 'lottery-refresh-token'
-const USER_KEY = 'lottery-user'
+const STORAGE_KEY = 'session'
+const ACCESS_TOKEN_KEY = `${STORAGE_KEY}:access-token`
+const REFRESH_TOKEN_KEY = `${STORAGE_KEY}:refresh-token`
+const USER_KEY = `${STORAGE_KEY}:user`
 
 function readStoredUser(): AuthUser | null {
   try {
@@ -19,14 +20,14 @@ function readStoredUser(): AuthUser | null {
   }
 }
 
-export const useAuthStore = defineStore('auth', () => {
+export const useSessionStore = defineStore('session', () => {
   const accessToken = ref<string | null>(localStorage.getItem(ACCESS_TOKEN_KEY))
   const refreshToken = ref<string | null>(localStorage.getItem(REFRESH_TOKEN_KEY))
   const user = ref<AuthUser | null>(readStoredUser())
 
-  const isAuthenticated = computed(() => Boolean(accessToken.value))
+  const isAuthenticated = computed(() => accessToken.value !== null)
 
-  function setTokens(tokens: AuthTokens): void {
+  function setSession(tokens: AuthTokens): void {
     accessToken.value = tokens.accessToken
     refreshToken.value = tokens.refreshToken
     localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken)
@@ -38,11 +39,20 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem(USER_KEY, JSON.stringify(authUser))
   }
 
+  function clearSession(): void {
+    accessToken.value = null
+    refreshToken.value = null
+    user.value = null
+    localStorage.removeItem(ACCESS_TOKEN_KEY)
+    localStorage.removeItem(REFRESH_TOKEN_KEY)
+    localStorage.removeItem(USER_KEY)
+  }
+
   async function login(credentials: LoginCredentials): Promise<void> {
     const response = await authService().login(credentials)
     const { accessToken: newAccessToken, refreshToken: newRefreshToken, ...authUser } = response
 
-    setTokens({ accessToken: newAccessToken, refreshToken: newRefreshToken })
+    setSession({ accessToken: newAccessToken, refreshToken: newRefreshToken })
     setUser(authUser)
   }
 
@@ -51,10 +61,10 @@ export const useAuthStore = defineStore('auth', () => {
   async function requestNewTokens(currentRefreshToken: string): Promise<string | null> {
     try {
       const tokens = await authService().refresh(currentRefreshToken)
-      setTokens(tokens)
+      setSession(tokens)
       return tokens.accessToken
     } catch {
-      logout()
+      clearSession()
       return null
     } finally {
       refreshPromise = null
@@ -63,7 +73,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   function refreshAccessToken(): Promise<string | null> {
     if (!refreshToken.value) {
-      logout()
+      clearSession()
       return Promise.resolve(null)
     }
 
@@ -81,18 +91,13 @@ export const useAuthStore = defineStore('auth', () => {
       setUser(currentUser)
     } catch (e) {
       if (e instanceof HttpError && e.status === 401) {
-        logout()
+        clearSession()
       }
     }
   }
 
   function logout(): void {
-    accessToken.value = null
-    refreshToken.value = null
-    user.value = null
-    localStorage.removeItem(ACCESS_TOKEN_KEY)
-    localStorage.removeItem(REFRESH_TOKEN_KEY)
-    localStorage.removeItem(USER_KEY)
+    clearSession()
   }
 
   return {
@@ -100,9 +105,10 @@ export const useAuthStore = defineStore('auth', () => {
     refreshToken,
     user,
     isAuthenticated,
-    setTokens,
-    refreshAccessToken,
+    setSession,
+    clearSession,
     login,
+    refreshAccessToken,
     fetchCurrentUser,
     logout,
   }

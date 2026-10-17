@@ -58,7 +58,7 @@ async function confirmDelete(): Promise<void> {
   deleteError.value = null
 
   try {
-    await usersStore.deleteUser(userToDelete.value.id)
+    await usersStore.removeUser(userToDelete.value.id)
     isDeleteModalOpen.value = false
   } catch (e) {
     deleteError.value = e instanceof Error ? e.message : 'Не вдалося видалити користувача'
@@ -77,12 +77,7 @@ watch(
 </script>
 
 <template>
-  <WinnersList
-    :winners="usersStore.winners"
-    :can-pick-winner="usersStore.canPickWinner"
-    @pick="usersStore.pickWinner"
-    @remove="usersStore.removeWinner"
-  />
+  <WinnersList />
 
   <div class="card">
     <div class="card-body">
