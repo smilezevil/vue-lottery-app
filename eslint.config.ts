@@ -22,5 +22,31 @@ export default defineConfigWithVueTs(
 
   ...pluginOxlint.buildFromOxlintConfigFile('.oxlintrc.json'),
 
+  {
+    name: 'app/fsd-public-api',
+    files: ['src/**/*.{ts,vue}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: '^@/(pages|widgets|features|entities)/[^/]+/.+',
+              message: 'Імпортуйте слайс тільки через його Public API (index.ts).',
+            },
+            {
+              regex: '^@/shared/[^/]+/.+',
+              message: 'Імпортуйте з shared тільки через Public API сегмента (index.ts).',
+            },
+            {
+              regex: '^@/app(/|$)',
+              message: 'Шар app не можна імпортувати з інших шарів.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+
   skipFormatting,
 )
