@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUsersStore } from '@/entities/user/model/users.store'
-import type { CreateUserDto } from '@/types/user'
+import type { CreateUserDto } from '@/entities/user'
 import UserForm from '@/features/user-form/ui/UserForm.vue'
 
 const router = useRouter()

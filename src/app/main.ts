@@ -5,8 +5,11 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './providers/router'
-import { setAuthHandler } from '@/api/http-client'
-import { useAuthStore } from '@/entities/session/model/session.store'
+import { registerServices } from './providers/services'
+import { setAuthHandler } from '@/shared/api'
+import { useAuthStore } from '@/entities/session'
+
+registerServices()
 
 const app = createApp(App)
 

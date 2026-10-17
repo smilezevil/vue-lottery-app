@@ -1,8 +1,10 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { HttpError } from '@/api/http-client'
-import { ServiceProvider } from '@/services/service-provider'
-import type { AuthTokens, AuthUser, LoginCredentials } from '@/types/auth'
+import { HttpError, ServiceProvider } from '@/shared/api'
+import type { AuthService } from '../api/auth.service'
+import type { AuthTokens, AuthUser, LoginCredentials } from './types'
+
+const authService = () => ServiceProvider.get<AuthService>('auth')
 
 const ACCESS_TOKEN_KEY = 'lottery-access-token'
 const REFRESH_TOKEN_KEY = 'lottery-refresh-token'
@@ -37,7 +39,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function login(credentials: LoginCredentials): Promise<void> {
-    const response = await ServiceProvider.auth.login(credentials)
+    const response = await authService().login(credentials)
     const { accessToken: newAccessToken, refreshToken: newRefreshToken, ...authUser } = response
 
     setTokens({ accessToken: newAccessToken, refreshToken: newRefreshToken })
@@ -48,7 +50,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function requestNewTokens(currentRefreshToken: string): Promise<string | null> {
     try {
-      const tokens = await ServiceProvider.auth.refresh(currentRefreshToken)
+      const tokens = await authService().refresh(currentRefreshToken)
       setTokens(tokens)
       return tokens.accessToken
     } catch {
@@ -75,7 +77,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     try {
-      const currentUser = await ServiceProvider.auth.getCurrentUser()
+      const currentUser = await authService().getCurrentUser()
       setUser(currentUser)
     } catch (e) {
       if (e instanceof HttpError && e.status === 401) {

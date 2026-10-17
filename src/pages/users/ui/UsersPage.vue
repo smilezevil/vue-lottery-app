@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { buildUsersQuery, USERS_PAGE_SIZE, useUsersStore } from '@/entities/user/model/users.store'
-import type { User } from '@/types/user'
+import type { User } from '@/entities/user'
 import WinnersList from '@/features/pick-winner/ui/WinnersList.vue'
 import SearchBar from '@/shared/ui/SearchBar/SearchBar.vue'
 import ParticipantsTable from '@/widgets/users-table/ui/UsersTable.vue'

@@ -1,5 +1,3 @@
-import type { Gender } from './user'
-
 export interface LoginCredentials {
   username: string
   password: string
@@ -16,7 +14,7 @@ export interface AuthUser {
   email: string
   firstName: string
   lastName: string
-  gender: Gender
+  gender: 'male' | 'female'
   image: string
 }
 

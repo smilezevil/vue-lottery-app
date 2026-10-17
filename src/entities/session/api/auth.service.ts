@@ -1,5 +1,5 @@
-import { http } from '@/api/http-client'
-import type { AuthTokens, AuthUser, LoginCredentials, LoginResponse } from '@/types/auth'
+import { http } from '@/shared/api'
+import type { AuthTokens, AuthUser, LoginCredentials, LoginResponse } from '../model/types'
 
 const TOKEN_LIFETIME_MINUTES = 30
 

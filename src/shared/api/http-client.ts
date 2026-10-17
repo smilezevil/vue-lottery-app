@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL
+import { API_URL } from '../config'
 
 export interface RequestOptions extends Omit<RequestInit, 'headers'> {
   headers?: Record<string, string>
@@ -52,7 +52,7 @@ function send(
     headers.Authorization = `Bearer ${accessToken}`
   }
 
-  return fetch(`${BASE_URL}${path}`, { ...options, headers })
+  return fetch(`${API_URL}${path}`, { ...options, headers })
 }
 
 export async function http<T>(path: string, options: RequestOptions = {}): Promise<T> {

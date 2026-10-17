@@ -1,5 +1,5 @@
-import { http } from '@/api/http-client'
-import type { CreateUserDto, UpdateUserDto, User } from '@/types/user'
+import { http } from '@/shared/api'
+import type { CreateUserDto, UpdateUserDto, User } from '../model/types'
 import type {
   Creatable,
   Deletable,
@@ -8,7 +8,7 @@ import type {
   PaginationParams,
   Readable,
   Searchable,
-} from './interfaces'
+} from '@/shared/api'
 
 interface UsersResponse {
   users: User[]

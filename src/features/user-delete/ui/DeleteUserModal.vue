@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { User } from '@/types/user'
+import type { User } from '@/entities/user'
 import BaseModal from '@/shared/ui/BaseModal/BaseModal.vue'
 import BaseButton from '@/shared/ui/BaseButton/BaseButton.vue'
 

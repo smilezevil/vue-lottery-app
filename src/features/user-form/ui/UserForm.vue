@@ -2,7 +2,7 @@
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { z } from 'zod'
-import type { CreateUserDto } from '@/types/user'
+import type { CreateUserDto } from '@/entities/user'
 import BaseInput from '@/shared/ui/BaseInput/BaseInput.vue'
 import BaseButton from '@/shared/ui/BaseButton/BaseButton.vue'
 
