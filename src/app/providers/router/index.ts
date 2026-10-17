@@ -7,13 +7,13 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: () => import('@/pages/home/ui/HomePage.vue'),
+      component: () => import('@/pages/home').then((m) => m.HomePage),
       meta: { title: 'Home' },
     },
     {
       path: '/about',
       name: 'about',
-      component: () => import('@/pages/about/ui/AboutPage.vue'),
+      component: () => import('@/pages/about').then((m) => m.AboutPage),
       meta: { title: 'About author' },
     },
     {
@@ -23,26 +23,26 @@ const router = createRouter({
         {
           path: '',
           name: 'users',
-          component: () => import('@/pages/users/ui/UsersPage.vue'),
+          component: () => import('@/pages/users').then((m) => m.UsersPage),
           meta: { title: 'Users' },
         },
         {
           path: 'new',
           name: 'user-create',
-          component: () => import('@/pages/user-create/ui/UserCreatePage.vue'),
+          component: () => import('@/pages/user-create').then((m) => m.UserCreatePage),
           meta: { title: 'New user' },
         },
         {
           path: ':id(\\d+)',
           name: 'user-details',
-          component: () => import('@/pages/user-details/ui/UserDetailsPage.vue'),
+          component: () => import('@/pages/user-details').then((m) => m.UserDetailsPage),
           props: true,
           meta: { title: 'User details' },
           children: [
             {
               path: 'edit',
               name: 'user-edit',
-              component: () => import('@/pages/user-details/ui/UserEditPage.vue'),
+              component: () => import('@/pages/user-details').then((m) => m.UserEditPage),
               props: true,
               meta: { title: 'Edit user' },
             },
@@ -53,13 +53,13 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: () => import('@/pages/login/ui/LoginPage.vue'),
+      component: () => import('@/pages/login').then((m) => m.LoginPage),
       meta: { title: 'Login', guestOnly: true, layout: 'auth' },
     },
     {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
-      component: () => import('@/pages/not-found/ui/NotFoundPage.vue'),
+      component: () => import('@/pages/not-found').then((m) => m.NotFoundPage),
       meta: { title: 'Page not found' },
     },
   ],

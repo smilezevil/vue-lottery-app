@@ -45,6 +45,14 @@ export default defineConfigWithVueTs(
           ],
         },
       ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            'ImportExpression[source.value=/^@\\/(pages|widgets|features|entities)\\/[^/]+\\/.+/]',
+          message: 'Імпортуйте слайс тільки через його Public API (index.ts).',
+        },
+      ],
     },
   },
 
